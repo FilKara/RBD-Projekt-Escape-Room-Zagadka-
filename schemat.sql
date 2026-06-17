@@ -34,7 +34,7 @@ CREATE TABLE Rooms(
     Difficulty int NOT NULL CHECK (Difficulty BETWEEN 1 and 5),
     MaxPlayers int NOT NULL CHECK (MaxPlayers between 2 and 6),
     TimeToSolveSeconds int NOT NULL DEFAULT 3600,
-    PricePerPersonPLN int NOT NULL,
+    PricePerPersonPLN DECIMAL NOT NULL,
 
     FOREIGN KEY (LocationID) REFERENCES Locations(LocationID) ON DELETE CASCADE
 );
@@ -70,7 +70,7 @@ CREATE TABLE Reservations(
     ReservationDate DATETIME NOT NULL ,
     NumberOfPlayers int NOT NULL CHECK (NumberOfPlayers BETWEEN 2 AND 6),
     PaidUpFront bool NOT NULL,
-    Status varchar(50) NOT NULL DEFAULT 'Pending',
+    Status varchar(50) NOT NULL DEFAULT 'Pending' CHECK ( Status IN ('Cancelled', 'Pending', 'Completed', 'No-Show')),
 
     FOREIGN KEY (RoomID) REFERENCES Rooms(RoomID),
     FOREIGN KEY (ClientID) REFERENCES Clients(ClientID),

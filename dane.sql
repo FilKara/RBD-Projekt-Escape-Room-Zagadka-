@@ -157,7 +157,6 @@ VALUES
   (5,  TRUE,  1850, 0),
   (6,  FALSE, 3600, 0),  -- no-show / timeout
   (7,  TRUE,  2100, 2),
-  (8,  FALSE, 0,    0),  -- pending: placeholder score (0 indicates not attempted)
   (9,  TRUE,  2400, 1),
   (10, TRUE,  2700, 2),
   (11, TRUE,  2000, 0),
