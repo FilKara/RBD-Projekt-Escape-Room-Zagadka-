@@ -125,4 +125,49 @@ VALUES (1, 1),
 INSERT INTO Reservations(RoomID, ClientID, EmployeeID, ReservationDate, NumberOfPlayers, PaidUpFront)
 VALUES (1, 1, 2, '2023-12-01 11:59:17', 6, true),
        (7, 1, 3, '2026-04-06 17:05:56',4, true),
-       (4, 1, 6, '2024-03-15 09:48:01', 5, false)
+       (4, 1, 6, '2024-03-15 09:48:01', 5, false);
+
+INSERT INTO Reservations (RoomID, ClientID, EmployeeID, ReservationDate, NumberOfPlayers, PaidUpFront, Status)
+VALUES
+  (2,  2,  4,  '2024-01-05 18:00:00', 5,  true,  'Completed'),
+  (3,  3,  7,  '2024-01-12 14:00:00', 4,  true,  'Completed'),
+  (5,  4,  5,  '2024-02-20 20:00:00', 3,  false, 'Cancelled'),
+  (6,  6,  8,  '2024-03-03 19:00:00', 5,  true,  'Completed'),
+  (8,  9,  9,  '2024-03-15 17:30:00', 4,  true,  'Completed'),
+  (9, 10, 10,  '2024-04-01 11:00:00', 4,  false, 'No-Show'),
+  (10,11, 11,  '2024-04-10 16:00:00', 5,  true,  'Completed'),
+  (11,12, 12,  '2024-05-20 18:00:00', 6,  true,  'Pending'),
+  (1, 13, 13,  '2024-06-01 19:00:00', 6,  true,  'Completed'),
+  (2, 14, 14,  '2024-06-15 20:00:00', 5,  false, 'Completed'),
+  (3, 15, 15,  '2024-07-04 15:00:00', 3,  true,  'Completed'),
+  (4, 16, 16,  '2024-08-09 12:00:00', 5,  true,  'Completed'),
+  (5, 17, 17,  '2024-09-11 13:30:00', 4,  false, 'Cancelled'),
+  (6, 18, 18,  '2024-10-22 20:30:00', 5,  true,  'Completed'),
+  (7, 19, 19,  '2024-11-30 17:00:00', 4,  true,  'Completed'),
+  (8, 21, 20,  '2025-01-02 18:00:00', 6,  false, 'Pending'),
+  (9, 22,  1,  '2025-02-14 14:00:00', 4,  true,  'Completed');
+
+
+INSERT INTO Scores (ReservationID, DidEscape, TimeToSolveSeconds, CluesUsed)
+VALUES
+  (1,  TRUE,  2500, 1),
+  (2,  TRUE,  3000, 2),
+  (3,  FALSE, 3600, 3),
+  (4,  TRUE,  2200, 1),
+  (5,  TRUE,  1850, 0),
+  (6,  FALSE, 3600, 0),  -- no-show / timeout
+  (7,  TRUE,  2100, 2),
+  (8,  FALSE, 0,    0),  -- pending: placeholder score (0 indicates not attempted)
+  (9,  TRUE,  2400, 1),
+  (10, TRUE,  2700, 2),
+  (11, TRUE,  2000, 0),
+  (12, TRUE,  2600, 1),
+  (13, FALSE, 3600, 4),
+  (14, TRUE,  1800, 1),
+  (15, TRUE,  2300, 2),
+  (16, TRUE,  3100, 3),
+  (17, TRUE,  2900, 1),
+  (18, TRUE,  2050, 0),
+  (19, TRUE,  1990, 1),
+  (20, TRUE,  2150, 1);
+
