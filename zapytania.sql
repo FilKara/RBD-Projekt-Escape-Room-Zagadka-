@@ -168,6 +168,32 @@ WHERE RoomRank <= 10;
 
 SELECT * FROM RankingTop10 ORDER BY RoomName, TimeToSolveSeconds;
 
+CREATE FUNCTION IsRoomAvailable(FRoomID INT, FReservationDate DATETIME)
+RETURNS BOOLEAN
+NOT DETERMINISTIC
+BEGIN
+    DECLARE FTimeToSolve INT;
+
+    SELECT TimeToSolveSeconds
+    INTO FTimeToSolve
+    FROM Rooms rm
+    WHERE rm.RoomID = FRoomID;
+
+    IF EXISTS(SELECT 1
+              FROM Reservations r
+              WHERE r.RoomID = FRoomID
+                AND r.Status != 'Cancelled'
+                AND r.ReservationDate < DATE_ADD(FReservationDate, INTERVAL FTimeToSolve SECOND)
+                AND DATE_ADD(r.ReservationDate, INTERVAL FTimeToSolve SECOND) > FReservationDate
+    )THEN
+        RETURN FALSE;
+    ELSE
+        RETURN TRUE;
+    end if;
+    end;
+
+SELECT IsRoomAvailable(1, '2023-12-01 11:59:17');
+
 CREATE PROCEDURE MakeReservation(
     IN PRoomID INT,
     IN PClientID INT,
@@ -221,6 +247,6 @@ Body: BEGIN
 END;
 
 
-CALL MakeReservation(3, 5, 2, '2026-07-01 18:00:00', 4, 1, @rid, @err);
+CALL MakeReservation(1, 5, 2, '2023-12-01 11:59:17', 4, 1, @rid, @err);
 SELECT @rid AS ReservationID, @err AS ErrorMessage;
 
