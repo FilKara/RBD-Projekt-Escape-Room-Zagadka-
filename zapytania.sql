@@ -243,14 +243,7 @@ Body: BEGIN
         LEAVE Body;
     END IF;
 
-    IF EXISTS(
-        SELECT 1
-        FROM Reservations r
-        WHERE r.RoomID = PRoomID
-          AND r.Status != 'Cancelled'
-          AND r.ReservationDate < DATE_ADD(PReservationStartDateTime, INTERVAL ValidateTimeSeconds SECOND)
-          AND DATE_ADD(r.ReservationDate, INTERVAL ValidateTimeSeconds SECOND) > PReservationStartDateTime
-    ) THEN
+    IF !IsRoomAvailable(PRoomID, PReservationStartDateTime ) THEN
         SET PErrorMessage = 'There already is a reservation at this time';
         LEAVE Body;
     END IF;
