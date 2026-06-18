@@ -294,8 +294,8 @@ BEFORE DELETE ON Reservations
 FOR EACH ROW
 BEGIN
     IF TIMESTAMPDIFF(HOUR, NOW(), OLD.ReservationDate) < 24 THEN
-        INSERT INTO CancelledReservationsLog (ReservationID, OriginalReservationDate)
-        VALUES (OLD.ReservationID, OLD.ReservationDate);
+        INSERT INTO CancelledReservationsLog (ReservationID)
+        VALUES (OLD.ReservationID);
     END IF;
 END;
 

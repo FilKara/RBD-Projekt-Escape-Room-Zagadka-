@@ -90,6 +90,5 @@ CREATE TABLE Scores(
 CREATE TABLE CancelledReservationsLog (
     LogID INT AUTO_INCREMENT PRIMARY KEY,
     ReservationID INT,
-    OriginalReservationDate DATETIME,
     CancelledAt DATETIME DEFAULT NOW()
 );
