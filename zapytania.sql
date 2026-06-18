@@ -1,4 +1,4 @@
-use EscapeRoomZagadka;
+# use EscapeRoomZagadka;
 
 # Escape rate per room
 SELECT
@@ -33,7 +33,6 @@ SELECT
 FROM Rooms rm
          INNER JOIN Reservations r ON rm.RoomID = r.RoomID
          INNER JOIN Scores s ON r.ReservationID = s.ReservationID
-WHERE r.ReservationDate >= NOW() - INTERVAL 180 DAY
 GROUP BY rm.RoomID, rm.Name
 HAVING COUNT(s.ScoreID) >= 5
    AND (SUM(CASE WHEN s.DidEscape THEN 1 ELSE 0 END) * 1.0 / COUNT(s.ScoreID)) < 0.5
@@ -169,27 +168,59 @@ WHERE RoomRank <= 10;
 
 SELECT * FROM RankingTop10 ORDER BY RoomName, TimeToSolveSeconds;
 
-DELIMITER //
 CREATE PROCEDURE MakeReservation(
     IN PRoomID INT,
     IN PClientID INT,
     IN PEmployeeID INT,
-    IN ReservationStartDateTime DATETIME,
+    IN PReservationStartDateTime DATETIME,
     IN PNumberOfPlayers INT,
     IN PPaidUpFront BOOL,
     OUT PReservationID INT,
-    OUT PSTATUS VARCHAR(20),
     OUT PErrorMessage TEXT
 )
-BEGIN
+Body: BEGIN
     DECLARE ValidateTimeSeconds INT;
 
     SET PReservationID = NULL;
     SET PErrorMessage = NULL;
 
     SELECT TimeToSolveSeconds
-    INTO ValidateTimeSeconds
-    FROM Rooms
-    WHERE RoomID = PRoomID;
+      INTO ValidateTimeSeconds
+      FROM Rooms
+     WHERE RoomID = PRoomID;
 
-end //
+    IF ValidateTimeSeconds IS NULL THEN
+        SET PErrorMessage = 'Room not found';
+        LEAVE Body;
+    END IF;
+
+    IF PNumberOfPlayers < 2 OR PNumberOfPlayers > 6 THEN
+        SET PErrorMessage = 'Invalid number of players';
+        LEAVE Body;
+    END IF;
+
+    IF EXISTS(
+        SELECT 1
+        FROM Reservations r
+        WHERE r.RoomID = PRoomID
+          AND r.Status != 'Cancelled'
+          AND r.ReservationDate < DATE_ADD(PReservationStartDateTime, INTERVAL ValidateTimeSeconds SECOND)
+          AND DATE_ADD(r.ReservationDate, INTERVAL ValidateTimeSeconds SECOND) > PReservationStartDateTime
+    ) THEN
+        SET PErrorMessage = 'There already is a reservation at this time';
+        LEAVE Body;
+    END IF;
+
+    INSERT INTO Reservations(
+      RoomID, ClientID, EmployeeID, ReservationDate, NumberOfPlayers, PaidUpFront
+    ) VALUES (
+      PRoomID, PClientID, PEmployeeID, PReservationStartDateTime, PNumberOfPlayers, PPaidUpFront
+    );
+
+    SET PReservationID = LAST_INSERT_ID();
+END;
+
+
+CALL MakeReservation(3, 5, 2, '2026-07-01 18:00:00', 4, 1, @rid, @err);
+SELECT @rid AS ReservationID, @err AS ErrorMessage;
+

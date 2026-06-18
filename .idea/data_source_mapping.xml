@@ -2,6 +2,7 @@
 <project version="4">
   <component name="DataSourcePerFileMappings">
     <file url="file://$PROJECT_DIR$/dane.sql" value="d76106f7-9b09-4544-95ec-f120f805c6b7" />
+    <file url="file://$PROJECT_DIR$/dane2.sql" value="d76106f7-9b09-4544-95ec-f120f805c6b7" />
     <file url="file://$PROJECT_DIR$/schemat.sql" value="d76106f7-9b09-4544-95ec-f120f805c6b7" />
     <file url="file://$PROJECT_DIR$/zapytania.sql" value="d76106f7-9b09-4544-95ec-f120f805c6b7" />
   </component>
