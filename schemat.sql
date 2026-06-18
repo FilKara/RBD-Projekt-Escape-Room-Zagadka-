@@ -85,4 +85,11 @@ CREATE TABLE Scores(
     CluesUsed int NOT NULL DEFAULT 0,
 
     FOREIGN KEY (ReservationID) REFERENCES Reservations(ReservationID)
-)
+);
+
+CREATE TABLE CancelledReservationsLog (
+    LogID INT AUTO_INCREMENT PRIMARY KEY,
+    ReservationID INT,
+    OriginalReservationDate DATETIME,
+    CancelledAt DATETIME DEFAULT NOW()
+);

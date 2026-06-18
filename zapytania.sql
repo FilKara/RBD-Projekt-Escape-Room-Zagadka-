@@ -168,6 +168,25 @@ WHERE RoomRank <= 10;
 
 SELECT * FROM RankingTop10 ORDER BY RoomName, TimeToSolveSeconds;
 
+CREATE FUNCTION DoesClientQualifyForDiscount(IN FClientID INT)
+RETURNS BOOLEAN
+BEGIN
+    DECLARE TimesReserved INT;
+
+    SELECT COUNT(r.ClientID)
+    INTO TimesReserved
+    FROM Reservations r
+    WHERE r.ClientID = FClientID;
+
+    IF TimesReserved > 3 THEN
+        RETURN TRUE;
+    ELSE
+        RETURN FALSE;
+    end if;
+end;
+
+SELECT DoesClientQualifyForDiscount(22);
+
 CREATE FUNCTION IsRoomAvailable(FRoomID INT, FReservationDate DATETIME)
 RETURNS BOOLEAN
 NOT DETERMINISTIC
@@ -191,6 +210,7 @@ BEGIN
         RETURN TRUE;
     end if;
     end;
+
 
 SELECT IsRoomAvailable(1, '2023-12-01 11:59:17');
 
@@ -249,4 +269,42 @@ END;
 
 CALL MakeReservation(1, 5, 2, '2023-12-01 11:59:17', 4, 1, @rid, @err);
 SELECT @rid AS ReservationID, @err AS ErrorMessage;
+
+#tworzenie klienta i rezerwacji jednoczesnie
+START TRANSACTION;
+
+INSERT INTO Clients(FirstName, LastName, PhoneNumber, EMail)
+VALUES ('Anna', 'Nowak', '+48987654321', 'anna.nowak@example.com');
+
+SET @NewClientID = LAST_INSERT_ID();
+
+CALL MakeReservation(1, @NewClientID, 2, '2023-12-01 11:59:17', 4, 1, @rid, @err);
+
+IF @err IS NULL THEN
+    COMMIT;
+    SELECT 'Success' AS Status, @rid AS ReservationID, @NewClientID AS ClientID;
+ELSE
+    ROLLBACK;
+    SELECT 'Failed' AS Status, @err AS ErrorMessage;
+
+end if;
+
+
+#trigger
+CREATE TRIGGER LogLateCancellation
+BEFORE DELETE ON Reservations
+FOR EACH ROW
+BEGIN
+    IF TIMESTAMPDIFF(HOUR, NOW(), OLD.ReservationDate) < 24 THEN
+        INSERT INTO CancelledReservationsLog (ReservationID, OriginalReservationDate)
+        VALUES (OLD.ReservationID, OLD.ReservationDate);
+    END IF;
+END;
+
+INSERT INTO Reservations (RoomID, ClientID, EmployeeID, ReservationDate, NumberOfPlayers, Status, PaidUpFront)
+VALUES (1, 1, 1, NOW() + INTERVAL 12 HOUR, 4, 'Pending', 1);
+
+SELECT * FROM Reservations ORDER BY ReservationID DESC LIMIT 1;
+
+DELETE FROM Reservations WHERE ReservationID = 47;
 
