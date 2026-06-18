@@ -1,20 +1,11 @@
 use EscapeRoomZagadka;
 
 # Escape rate per room
-SELECT  SUM(s.DidEscape)/COUNT(s.ScoreID) * 100 as EscapeRatePrecent,  ro.RoomID, ro.Name FROM Scores s
+SELECT  ROUND(SUM(s.DidEscape)/COUNT(s.ScoreID) * 100 , 2) as EscapeRatePrecent,  ro.RoomID, ro.Name FROM Scores s
 LEFT JOIN Reservations r ON s.ReservationID = r.ReservationID
 LEFT JOIN Rooms ro ON r.RoomID = ro.RoomID
 GROUP BY ro.RoomID, ro.Name;
 
-SELECT count(DidEscape), ro.Name FROM Scores s
-JOIN Reservations r on s.ReservationID = r.ReservationID
-join Rooms ro on r.RoomID = ro.RoomID
-where DidEscape = true
-group by ro.Name;
-
-SELECT DidEscape, ro.Name FROM Scores s
-JOIN Reservations r on s.ReservationID = r.ReservationID
-join Rooms ro on r.RoomID = ro.RoomID;
 #
 # use EscapeRoomZagadka;
 #
