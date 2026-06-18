@@ -79,7 +79,7 @@ CREATE TABLE Reservations(
 
 CREATE TABLE Scores(
     ScoreID int AUTO_INCREMENT PRIMARY KEY,
-    ReservationID int NOT NULL ,
+    ReservationID int NOT NULL UNIQUE ,
     DidEscape bool NOT NULL,
     TimeToSolveSeconds int NOT NULL,
     CluesUsed int NOT NULL DEFAULT 0,

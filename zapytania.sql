@@ -8,7 +8,7 @@ FROM Scores s
          LEFT JOIN Rooms ro ON r.RoomID = ro.RoomID
 GROUP BY ro.RoomID, ro.Name;
 
--- 1) Upcoming reservations in the next 30 days (uses BETWEEN, ORDER BY, LIMIT)
+# Upcoming reservations in the next 30 days
 SELECT
     r.ReservationID,
     CONCAT(c.FirstName, ' ', c.LastName) AS ClientName,
@@ -23,8 +23,7 @@ WHERE r.ReservationDate BETWEEN NOW() AND (NOW() + INTERVAL 30 DAY)
 ORDER BY r.ReservationDate
 LIMIT 100;
 
--- 2) Rooms with low escape success rate in the last 180 days (GROUP BY + HAVING)
--- Useful to identify rooms that may need balancing or design fixes.
+# Rooms with low escape success rate in the last 180 days
 SELECT
     rm.RoomID,
     rm.Name AS RoomName,
@@ -38,7 +37,7 @@ HAVING COUNT(s.ScoreID) >= 5
    AND (SUM(CASE WHEN s.DidEscape THEN 1 ELSE 0 END) * 1.0 / COUNT(s.ScoreID)) < 0.5
 ORDER BY EscapeRatePercent ASC;
 
--- 3) Top 10 clients by revenue (Completed reservations) (JOIN + GROUP BY + ORDER BY + LIMIT)
+# Top 10 clients by revenue (Completed reservations)
 SELECT
     c.ClientID,
     CONCAT(c.FirstName, ' ', c.LastName) AS ClientName,
@@ -52,22 +51,22 @@ GROUP BY c.ClientID, ClientName
 ORDER BY TotalSpentPln DESC
 LIMIT 10;
 
--- 4) Employees working in more than one location (INNER JOIN + GROUP BY + HAVING)
+# Employees working in more than one location
 SELECT
     e.EmployeeID,
-    CONCAT(e.FirstName, ' ', e.LastName) AS employee_name,
+    CONCAT(e.FirstName, ' ', e.LastName) AS EmployeeName,
     e.Role,
-    COUNT(el.LocationID) AS location_count
+    COUNT(el.LocationID) AS LocationCount
 FROM Employees e
          INNER JOIN Employees_Locations el ON e.EmployeeID = el.EmployeeID
-GROUP BY e.EmployeeID, employee_name, e.Role
+GROUP BY e.EmployeeID, EmployeeName, e.Role
 HAVING COUNT(el.LocationID) > 1
-ORDER BY location_count DESC;
+ORDER BY LocationCount DESC;
 
--- 5) Rooms that currently have no theme assigned (LEFT JOIN + IS NULL)
+# Rooms that currently have no theme assigned
 SELECT
     rm.RoomID,
-    rm.Name AS room_name,
+    rm.Name AS RoomName,
     rm.Difficulty,
     rm.MaxPlayers
 FROM Rooms rm
@@ -75,11 +74,11 @@ FROM Rooms rm
 WHERE rt.RoomID IS NULL
 ORDER BY rm.Difficulty DESC;
 
--- 6) Reservations where NumberOfPlayers violates room capacity rules (uses > and < operators)
+# Reservations where NumberOfPlayers violates room capacity
 SELECT
     r.ReservationID,
-    CONCAT(c.FirstName, ' ', c.LastName) AS client_name,
-    rm.Name AS room_name,
+    CONCAT(c.FirstName, ' ', c.LastName) AS ClientName,
+    rm.Name AS RoomName,
     r.NumberOfPlayers,
     rm.MaxPlayers
 FROM Reservations r
@@ -88,11 +87,10 @@ FROM Reservations r
 WHERE r.NumberOfPlayers > rm.MaxPlayers OR r.NumberOfPlayers < 2
 ORDER BY r.ReservationDate DESC;
 
--- 7) Recent No-Show reservations that have no Scores recorded (NOT EXISTS)
--- These may need follow-up/refund or manual review.
+#Recent No-Show reservations that have no Scores recorded
 SELECT
     r.ReservationID,
-    CONCAT(c.FirstName, ' ', c.LastName) AS client_name,
+    CONCAT(c.FirstName, ' ', c.LastName) AS ClientName,
     r.ReservationDate,
     r.Status
 FROM Reservations r
@@ -104,32 +102,31 @@ WHERE r.Status = 'No-Show'
 )
 ORDER BY r.ReservationDate DESC;
 
--- 8) Peak booking hours (HOUR(), GROUP BY, ORDER BY, LIMIT)
--- Helps staff scheduling and shift planning.
+# Peak booking hours
 SELECT
-    HOUR(r.ReservationDate) AS booking_hour,
-    COUNT(*) AS bookings
+    HOUR(r.ReservationDate) AS BookingHour,
+    COUNT(*) AS Bookings
 FROM Reservations r
 WHERE r.ReservationDate >= NOW() - INTERVAL 365 DAY
-GROUP BY booking_hour
-ORDER BY bookings DESC
+GROUP BY BookingHour
+ORDER BY Bookings DESC
 LIMIT 5;
 
--- 9) Rooms with highest average clues used (GROUP BY + HAVING + ORDER BY)
+# Rooms with highest average clues used (GROUP BY + HAVING + ORDER BY)
 SELECT
     rm.RoomID,
-    rm.Name AS room_name,
-    AVG(s.CluesUsed) AS avg_clues_used,
-    COUNT(s.ScoreID) AS runs_count
+    rm.Name AS RoomName,
+    AVG(s.CluesUsed) AS AvgCluesUsed,
+    COUNT(s.ScoreID) AS RunsCount
 FROM Rooms rm
          INNER JOIN Reservations r ON rm.RoomID = r.RoomID
          INNER JOIN Scores s ON r.ReservationID = s.ReservationID
 GROUP BY rm.RoomID, rm.Name
 HAVING COUNT(s.ScoreID) >= 3
-ORDER BY avg_clues_used DESC
+ORDER BY AvgCluesUsed DESC
 LIMIT 10;
 
--- 10) Clients who have booked at least one room with the 'Horror' theme (IN subquery) and email domain filter (LIKE)
+# Clients who have booked at least one room with the 'Horror'
 SELECT DISTINCT
     c.ClientID,
     CONCAT(c.FirstName, ' ', c.LastName) AS ClientName,
@@ -176,7 +173,8 @@ BEGIN
     SELECT COUNT(r.ClientID)
     INTO TimesReserved
     FROM Reservations r
-    WHERE r.ClientID = FClientID;
+    WHERE r.ClientID = FClientID
+    AND r.Status = 'Completed';
 
     IF TimesReserved > 3 THEN
         RETURN TRUE;
@@ -185,7 +183,7 @@ BEGIN
     end if;
 end;
 
-SELECT DoesClientQualifyForDiscount(22);
+SELECT DoesClientQualifyForDiscount(2);
 
 CREATE FUNCTION IsRoomAvailable(FRoomID INT, FReservationDate DATETIME)
 RETURNS BOOLEAN
@@ -306,5 +304,5 @@ VALUES (1, 1, 1, NOW() + INTERVAL 12 HOUR, 4, 'Pending', 1);
 
 SELECT * FROM Reservations ORDER BY ReservationID DESC LIMIT 1;
 
-DELETE FROM Reservations WHERE ReservationID = 47;
+DELETE FROM Reservations WHERE ReservationID = 43;
 
